@@ -39,7 +39,7 @@ def evaluate(model_path: str, data_path: str, out_path: str) -> dict:
         "n_val_rows": len(df),
     }
 
-    with open(out_path, "w") as f:
+    with open(out_path, "w", newline="\n") as f:
         json.dump(metrics, f, indent=2)
 
     logger.info("Evaluation metrics:%s", metrics)
