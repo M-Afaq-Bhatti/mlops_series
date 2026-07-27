@@ -39,7 +39,7 @@ def build_pipeline() -> Pipeline:
             ("preprocess", preprocessor),
             (
                 "model",
-                RandomForestRegressor(n_estimators=200, max_depth=8, random_state=42),
+                RandomForestRegressor(n_estimators=150, max_depth=8, random_state=42),
             ),
         ]
     )
