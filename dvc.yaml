@@ -1,0 +1,30 @@
+stages:
+  prepare:
+    cmd: python -m app.prepare --data data/students.csv --out-dir data/prepared
+    deps:
+      - app/prepare.py
+      - app/data.py
+      - data/students.csv
+    outs:
+      - data/prepared/train.csv
+      - data/prepared/val.csv
+
+  train:
+    cmd: python -m app.train --data data/prepared/train.csv --out model.pkl
+    deps:
+      - app/train.py
+      - app/data.py
+      - data/prepared/train.csv
+    outs:
+      - model.pkl
+
+  evaluate:
+    cmd: python -m app.evaluate --model model.pkl --data data/prepared/val.csv --out metrics.json
+    deps:
+      - app/evaluate.py
+      - app/data.py
+      - model.pkl
+      - data/prepared/val.csv
+    metrics:
+      - metrics.json:
+          cache: false

@@ -1,0 +1,71 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m app.prepare --data data/students.csv --out-dir data/prepared
+    deps:
+    - path: app/data.py
+      hash: md5
+      md5: 3fd56607464c1337f6cc7a5890402280
+      size: 2767
+    - path: app/prepare.py
+      hash: md5
+      md5: 0137dc4fac8bdfad5cac41cf8b0f8632
+      size: 1793
+    - path: data/students.csv
+      hash: md5
+      md5: 2a3124a6cbd8c0d8a75b36653d351a76
+      size: 45984436
+    outs:
+    - path: data/prepared/train.csv
+      hash: md5
+      md5: 67088b4926d52aed6ef50b755d28b4ac
+      size: 37290119
+    - path: data/prepared/val.csv
+      hash: md5
+      md5: 0cf420add14a6fcf5d7215669b0661e0
+      size: 9324467
+  train:
+    cmd: python -m app.train --data data/prepared/train.csv --out model.pkl
+    deps:
+    - path: app/data.py
+      hash: md5
+      md5: 3fd56607464c1337f6cc7a5890402280
+      size: 2767
+    - path: app/train.py
+      hash: md5
+      md5: 9701402c155c14019a641bd4b202c5f8
+      size: 2096
+    - path: data/prepared/train.csv
+      hash: md5
+      md5: 67088b4926d52aed6ef50b755d28b4ac
+      size: 37290119
+    outs:
+    - path: model.pkl
+      hash: md5
+      md5: d10c5bcd12714878c22f58801d64a347
+      size: 7426234
+  evaluate:
+    cmd: python -m app.evaluate --model model.pkl --data data/prepared/val.csv
+      --out metrics.json
+    deps:
+    - path: app/data.py
+      hash: md5
+      md5: 3fd56607464c1337f6cc7a5890402280
+      size: 2767
+    - path: app/evaluate.py
+      hash: md5
+      md5: f0e7ec90e6cc7c42cdac4ae2c06ac4c8
+      size: 1785
+    - path: data/prepared/val.csv
+      hash: md5
+      md5: 0cf420add14a6fcf5d7215669b0661e0
+      size: 9324467
+    - path: model.pkl
+      hash: md5
+      md5: d10c5bcd12714878c22f58801d64a347
+      size: 7426234
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: 3e5ab254ecae51b182b689881694b686
+      size: 63
