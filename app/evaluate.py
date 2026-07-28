@@ -1,9 +1,7 @@
-"""Evaluate a trained model against the validation split and write metrics.
+"""Evaluate a trained model against the validation split, log metrics to
+MLflow (into the same run as training), and write metrics.json for DVC.
 
-This is DVC pipeline stage 3: "evaluate". DVC treats metrics.json as a
-tracked metrics file, which lets you run `dvc metrics show` and
-`dvc metrics diff` to compare runs without opening MLflow (that
-comparison layer comes in Module 4).
+This is DVC pipeline stage 3: "evaluate".
 
 Usage:
     python -m app.evaluate --model model.pkl --data data/prepared/val.csv --out metrics.json
@@ -12,12 +10,15 @@ Usage:
 import argparse
 import json
 import logging
+from pathlib import Path
 
 import joblib
+import mlflow
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, r2_score
 
 from app.data import CATEGORICAL_FEATURES, NUMERIC_FEATURES, TARGET
+from app.train import EXPERIMENT_NAME, RUN_ID_FILE
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s%(levelname)s%(name)s -%(message)s"
@@ -39,11 +40,25 @@ def evaluate(model_path: str, data_path: str, out_path: str) -> dict:
         "n_val_rows": len(df),
     }
 
-    with open(out_path, "w", newline="\n") as f:
+    with open(out_path, "w") as f:
         json.dump(metrics, f, indent=2)
-
     logger.info("Evaluation metrics:%s", metrics)
     logger.info("Metrics written to%s", out_path)
+
+    # Log into the SAME MLflow run that training created, so params,
+    # the model artifact, and metrics all live under one run.
+    run_id_path = Path(RUN_ID_FILE)
+    if run_id_path.exists():
+        run_id = run_id_path.read_text().strip()
+        mlflow.set_experiment(EXPERIMENT_NAME)
+        with mlflow.start_run(run_id=run_id):
+            mlflow.log_metric("mae", metrics["mae"])
+            mlflow.log_metric("r2", metrics["r2"])
+            mlflow.log_metric("n_val_rows", metrics["n_val_rows"])
+        logger.info("Metrics logged to MLflow run%s", run_id)
+    else:
+        logger.warning("%s not found - skipping MLflow metric logging", RUN_ID_FILE)
+
     return metrics
 
 

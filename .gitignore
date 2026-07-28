@@ -4,5 +4,7 @@ __pycache__/
 .env
 model.pkl
 data/students.csv
+data/students_big_data.csv
 .pytest_cache/
 *.egg-info/
+mlruns/
