@@ -13,17 +13,17 @@ stages:
       size: 1795
     - path: data/students.csv
       hash: md5
-      md5: 2a3124a6cbd8c0d8a75b36653d351a76
-      size: 45984436
+      md5: acbd888bbf02db1641380f168cba9562
+      size: 1480001
     outs:
     - path: data/prepared/train.csv
       hash: md5
-      md5: 67088b4926d52aed6ef50b755d28b4ac
-      size: 37290119
+      md5: 1a2fb9336f7e1ec752bde3cfdf5b1343
+      size: 1184334
     - path: data/prepared/val.csv
       hash: md5
-      md5: 0cf420add14a6fcf5d7215669b0661e0
-      size: 9324467
+      md5: d92fb1fa13f4eb0996982ae8e93350c0
+      size: 295816
   train:
     cmd: python -m app.train --data data/prepared/train.csv --out model.pkl
     deps:
@@ -33,17 +33,17 @@ stages:
       size: 2767
     - path: app/train.py
       hash: md5
-      md5: 5af9020f9531f5e1fb5099e2ef7baeac
-      size: 2098
+      md5: c0674b17cbeaf186e86f318eeb34ab5d
+      size: 3327
     - path: data/prepared/train.csv
       hash: md5
-      md5: 67088b4926d52aed6ef50b755d28b4ac
-      size: 37290119
+      md5: 1a2fb9336f7e1ec752bde3cfdf5b1343
+      size: 1184334
     outs:
     - path: model.pkl
       hash: md5
-      md5: 91e299025eca63bba337f41517f5fb64
-      size: 5571034
+      md5: 982dcc7a1212847cc1a1a3bf26ce5bf9
+      size: 7391098
   evaluate:
     cmd: python -m app.evaluate --model model.pkl --data data/prepared/val.csv
       --out metrics.json
@@ -54,18 +54,18 @@ stages:
       size: 2767
     - path: app/evaluate.py
       hash: md5
-      md5: 916137c35eaf864da8794cd7fd3c0d35
-      size: 1801
+      md5: b7383eb77c02a1f832e6542c57a0aa90
+      size: 2433
     - path: data/prepared/val.csv
       hash: md5
-      md5: 0cf420add14a6fcf5d7215669b0661e0
-      size: 9324467
+      md5: d92fb1fa13f4eb0996982ae8e93350c0
+      size: 295816
     - path: model.pkl
       hash: md5
-      md5: 91e299025eca63bba337f41517f5fb64
-      size: 5571034
+      md5: 982dcc7a1212847cc1a1a3bf26ce5bf9
+      size: 7391098
     outs:
     - path: metrics.json
       hash: md5
-      md5: 5f42e0e419875ff4c2c48482f2e57383
-      size: 59
+      md5: 41a9ad94dfa0ee038de0d9deeba930e5
+      size: 61
