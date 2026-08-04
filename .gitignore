@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 .env
 model.pkl
+model.onnx
 data/students.csv
 data/students_big_data.csv
 .pytest_cache/
