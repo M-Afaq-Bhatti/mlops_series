@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎓 Student Score Predictor — End-to-End MLOps Pipeline 
+# 🎓 Student Score Predictor — End-to-End MLOps Pipeline
 
 **A small model, taken all the way to production — the right way.**
 
