@@ -88,6 +88,6 @@ jobs:
 
       - name: Build and push image
         run: |
-          docker build -t student-score-predictor:latest .
+          docker build --provenance=false --sbom=false --platform linux/amd64 -t student-score-predictor:latest .
           docker tag student-score-predictor:latest ${{ secrets.ECR_REGISTRY }}/student-score-predictor:latest
           docker push ${{ secrets.ECR_REGISTRY }}/student-score-predictor:latest

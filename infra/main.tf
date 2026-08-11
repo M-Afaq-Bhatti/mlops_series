@@ -27,7 +27,7 @@ variable "project_name" {
 variable "monthly_budget_usd" {
   description = "Hard monthly spend limit - set well under the $40 credit"
   type        = string
-  default     = "20"
+  default     = "15"
 }
 
 variable "alert_email" {
@@ -52,7 +52,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "expire_old_artifacts" {
     }
 
     expiration {
-      days = 90
+      days = 30
     }
   }
 }
@@ -67,6 +67,39 @@ resource "aws_ecr_repository" "score_model_repo" {
   image_scanning_configuration {
     scan_on_push = true
   }
+}
+
+resource "aws_lambda_function" "score_predictor" {
+  function_name = "score-predictor"
+  role          = aws_iam_role.lambda_exec_role.arn
+  package_type  = "Image"
+  image_uri     = "${aws_ecr_repository.score_model_repo.repository_url}:latest"
+  timeout       = 10
+  memory_size   = 512
+
+  # Terraform should manage the function's config, but NOT fight with
+  # your CI pipeline over which image tag is currently deployed -
+  # deploy_lambda.py (Module 7/8) updates the running image after this.
+  lifecycle {
+    ignore_changes = [image_uri]
+  }
+}
+
+resource "aws_lambda_function_url" "score_predictor_url" {
+  function_name      = aws_lambda_function.score_predictor.function_name
+  authorization_type = "NONE"
+}
+
+output "lambda_function_url" {
+  value = aws_lambda_function_url.score_predictor_url.function_url
+}
+
+resource "aws_lambda_permission" "allow_public_url" {
+  statement_id           = "AllowPublicFunctionUrlAccess"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.score_predictor.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
 }
 
 resource "aws_ecr_lifecycle_policy" "expire_untagged" {

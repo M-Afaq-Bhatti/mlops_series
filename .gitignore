@@ -11,3 +11,4 @@ data/students_big_data.csv
 mlruns/
 tofu.zip
 tofu_bin/
+infra/.terraform
