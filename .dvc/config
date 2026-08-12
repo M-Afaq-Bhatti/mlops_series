@@ -1,4 +1,7 @@
 [core]
-    remote = localremote
+    remote = s3remote
 ['remote "localremote"']
     url = C:/Users/user/dvc_remote_storage
+['remote "s3remote"']
+    url = s3://student-score-predictor-artifacts-178686400622/dvc-store
+    region = us-east-1
