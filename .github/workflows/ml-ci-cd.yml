@@ -27,21 +27,20 @@ jobs:
         run: |
           uv pip install --system -r pyproject.toml
           uv pip install --system -r pyproject.toml --extra dev
+          uv pip install --system -r pyproject.toml --extra pipeline
 
       - name: Run unit tests
         run: pytest tests/ -v
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          
+
       - name: Pull versioned data with DVC
-        run: |
-          pip install "dvc[s3]"
-          dvc pull
+        run: dvc pull
 
       - name: Run training + evaluation pipeline
         run: dvc repro
@@ -77,13 +76,10 @@ jobs:
           python-version: "3.12"
 
       - name: Install uv
-        run: pip install uv
-
-      - name: Install dependencies
-        run: uv pip install --system -r pyproject.toml
-
-      - name: Promote model to production
-        run: python -m app.promote --run-id-file run_id.txt
+        run: |
+          pip install uv
+          uv pip install --system -r pyproject.toml
+          uv pip install --system -r pyproject.toml --extra pipeline
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -91,6 +87,12 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+
+      - name: Pull versioned data with DVC
+        run: dvc pull
+
+      - name: Promote model to production
+        run: python -m app.promote --run-id-file run_id.txt
 
       - name: Login to ECR
         run: aws ecr get-login-password | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
