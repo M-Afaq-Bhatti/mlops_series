@@ -5,6 +5,8 @@ on:
     branches: [main]
   push:
     branches: [main]
+  schedule:
+    - cron: "0 6 * * *"
 
 jobs:
   test-train-validate:
@@ -31,7 +33,7 @@ jobs:
 
       - name: Pull versioned data with DVC
         run: |
-          pip install dvc
+          pip install "dvc[s3]"
           dvc pull
 
       - name: Run training + evaluation pipeline
@@ -91,3 +93,37 @@ jobs:
           docker build --provenance=false --sbom=false --platform linux/amd64 -t student-score-predictor:latest .
           docker tag student-score-predictor:latest ${{ secrets.ECR_REGISTRY }}/student-score-predictor:latest
           docker push ${{ secrets.ECR_REGISTRY }}/student-score-predictor:latest
+
+  scheduled-drift-check:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv pip install --system -r pyproject.toml --extra pipeline
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Pull versioned training data with DVC
+        run: dvc pull
+
+      - name: Pull latest logged predictions from S3
+        run: aws s3 sync s3://${{ secrets.PREDICTION_LOG_BUCKET }}/predictions/ data/incoming/ --exclude "*" --include "*.json"
+
+      - name: Run drift check against production traffic
+        run: python -m app.drift_check --reference data/prepared/train.csv --current data/incoming/latest_batch.csv --alert-threshold 2
